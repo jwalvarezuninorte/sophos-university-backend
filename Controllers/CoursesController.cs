@@ -132,8 +132,22 @@ namespace SophosUniversityBackend.Controllers
                 ProffesorId = course.ProffesorId,
             };
 
+
             _context.Courses.Add(newCourse);
             await _context.SaveChangesAsync();
+
+            var proffesor = await _context.Proffesors.FindAsync(newCourse.ProffesorId);
+            var proffesorsCourse = new ProffesorsCourse
+            {
+                CourseId = newCourse.Id,
+                ProffesorId = newCourse.ProffesorId,
+                Course = newCourse,
+                Proffesor = proffesor,
+            };
+
+            _context.ProffesorsCourses.Add(proffesorsCourse);
+            await _context.SaveChangesAsync();
+
 
             return CreatedAtAction("GetCourse", new { id = newCourse.Id }, new SimpleCourseDto
             {
@@ -142,6 +156,48 @@ namespace SophosUniversityBackend.Controllers
                 Credits = newCourse.Credits,
                 TotalStudents = newCourse.StudentsCourses.Count,
                 Limit = newCourse.Limit,
+            });
+        }
+
+        // add student to course
+        [HttpPost("addStudent")]
+        public async Task<ActionResult<SimpleCourseDto>> AddStudentToCourse(AddStudentToCourseDto studentCourse)
+        {
+            if (_context.Courses == null)
+            {
+                return Problem("Entity set 'AppDbContext.Courses'  is null.");
+            }
+
+            var course = await _context.Courses.FindAsync(studentCourse.CourseId);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var student = await _context.Students.FindAsync(studentCourse.StudentId);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            var studentCourseToAdd = new StudentsCourse
+            {
+                CourseId = course.Id,
+                StudentId = student.Id,
+                Course = course,
+                Student = student,
+            };
+
+            _context.StudentsCourses.Add(studentCourseToAdd);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetCourse", new { id = course.Id }, new SimpleCourseDto
+            {
+                Id = course.Id,
+                Name = course.Title,
+                Credits = course.Credits,
+                TotalStudents = course.StudentsCourses.Count,
+                Limit = course.Limit,
             });
         }
 
@@ -154,9 +210,10 @@ namespace SophosUniversityBackend.Controllers
                 return NotFound();
             }
             var course = await _context.Courses.FindAsync(id);
+
             if (course == null)
             {
-                return NotFound();
+                return NotFound("Curso no encontrado");
             }
 
             _context.Courses.Remove(course);

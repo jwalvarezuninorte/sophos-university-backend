@@ -32,6 +32,7 @@ namespace SophosUniversityBackend.Controllers
             }
 
             // return await _context.Students.Select(s => s.ToDto()).ToListAsync();
+
             return await _context.Students.Include(d => d.Department).Select(s => new StudentDto
             {
                 Id = s.Id,
@@ -39,7 +40,7 @@ namespace SophosUniversityBackend.Controllers
                 DepartmentId = s.DepartmentId,
                 DepartmentName = s.Department.DepartmentName ?? "Sin facultad",
                 TotalCredits = s.StudentsCourses.Sum(c => c.Course.Credits),
-            }).ToListAsync();
+            }).OrderByDescending(s => s.Id).ToListAsync();
             // return await _context.Students.ToListAsync();
         }
 

@@ -12,6 +12,8 @@ builder.Services.AddSwaggerGen();
 // Program.cs
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
+builder.Services.AddCors();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,6 +24,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Shows UseCors with CorsPolicyBuilder.
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader();
+});
 
 app.UseAuthorization();
 
